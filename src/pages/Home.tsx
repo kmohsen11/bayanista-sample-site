@@ -1,6 +1,31 @@
 import { Link } from 'react-router-dom';
 
+declare global {
+  interface Window {
+    Bayanista?: { experiment: (flagKey: string) => string; [k: string]: any };
+  }
+}
+
 function Home() {
+  // === EXPERIMENT 1: Hero CTA Text ===
+  // Control: "Get Started Free" | Test: "Try It Now — Free"
+  const heroCta = window.Bayanista?.experiment('hero-cta-text') || 'control';
+  const heroButtonText = heroCta === 'test' ? 'Try It Now — Free' : 'Get Started Free';
+
+  // === EXPERIMENT 2: Pro Price ===
+  // Control: $49/mo | Test: $39/mo with "Limited launch price"
+  const proPricing = window.Bayanista?.experiment('pro-price-test') || 'control';
+  const proPrice = proPricing === 'test' ? '$39' : '$49';
+  const proPriceSubtext = proPricing === 'test' ? 'Limited launch price' : 'For growing teams';
+
+  // === EXPERIMENT 3: Bottom CTA Text ===
+  // Control: "Start Free Trial" | Test: "Start in 60 Seconds"
+  const bottomCta = window.Bayanista?.experiment('bottom-cta-text') || 'control';
+  const bottomButtonText = bottomCta === 'test' ? 'Start in 60 Seconds' : 'Start Free Trial';
+  const bottomSubtext = bottomCta === 'test'
+    ? 'No credit card. No setup. Just paste one line of code.'
+    : 'Join 2,500+ companies using Bayanista to make better product decisions.';
+
   return (
     <>
       {/* Hero Section */}
@@ -11,7 +36,7 @@ function Home() {
           into meaningful insights. Zero configuration, instant intelligence.
         </p>
         <div className="hero-buttons">
-          <Link to="/signup" className="btn btn-primary btn-lg">Get Started Free</Link>
+          <Link to="/signup" className="btn btn-primary btn-lg">{heroButtonText}</Link>
           <Link to="/product" className="btn btn-outline btn-lg">Learn More</Link>
         </div>
       </section>
@@ -122,8 +147,8 @@ function Home() {
           <div className="card pricing-card featured">
             <div className="pricing-badge">Most Popular</div>
             <h3>Pro</h3>
-            <p style={{ color: 'var(--text-light)', fontSize: '0.85rem' }}>For growing teams</p>
-            <div className="pricing-price">$49<span>/mo</span></div>
+            <p style={{ color: 'var(--text-light)', fontSize: '0.85rem' }}>{proPriceSubtext}</p>
+            <div className="pricing-price">{proPrice}<span>/mo</span></div>
             <ul className="pricing-features">
               <li>100,000 events/month</li>
               <li>10 projects</li>
@@ -248,11 +273,11 @@ function Home() {
           Ready to Understand Your Users?
         </h2>
         <p style={{ fontSize: '1.1rem', opacity: 0.9, maxWidth: '500px', margin: '0 auto 2rem' }}>
-          Join 2,500+ companies using Bayanista to make better product decisions.
+          {bottomSubtext}
         </p>
         <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
           <Link to="/signup" className="btn btn-lg" style={{ background: 'white', color: 'var(--primary)', fontWeight: 700 }}>
-            Start Free Trial
+            {bottomButtonText}
           </Link>
           <Link to="/contact" className="btn btn-outline btn-lg" style={{ borderColor: 'rgba(255,255,255,0.5)', color: 'white' }}>
             Talk to Sales
