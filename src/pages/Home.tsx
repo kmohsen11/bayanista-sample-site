@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 
 declare global {
@@ -6,21 +7,44 @@ declare global {
   }
 }
 
+function useExperiment(flagKey: string): string {
+  const [variant, setVariant] = useState('control');
+
+  useEffect(() => {
+    // Try immediately
+    if (window.Bayanista?.experiment) {
+      setVariant(window.Bayanista.experiment(flagKey));
+      return;
+    }
+    // Retry every 200ms until SDK loads (max 3s)
+    let attempts = 0;
+    const interval = setInterval(() => {
+      attempts++;
+      if (window.Bayanista?.experiment) {
+        setVariant(window.Bayanista.experiment(flagKey));
+        clearInterval(interval);
+      } else if (attempts > 15) {
+        clearInterval(interval);
+      }
+    }, 200);
+    return () => clearInterval(interval);
+  }, [flagKey]);
+
+  return variant;
+}
+
 function Home() {
   // === EXPERIMENT 1: Hero CTA Text ===
-  // Control: "Get Started Free" | Test: "Try It Now — Free"
-  const heroCta = window.Bayanista?.experiment('hero-cta-text') || 'control';
+  const heroCta = useExperiment('hero-cta-text');
   const heroButtonText = heroCta === 'test' ? 'Try It Now — Free' : 'Get Started Free';
 
   // === EXPERIMENT 2: Pro Price ===
-  // Control: $49/mo | Test: $39/mo with "Limited launch price"
-  const proPricing = window.Bayanista?.experiment('pro-price-test') || 'control';
+  const proPricing = useExperiment('pro-price-test');
   const proPrice = proPricing === 'test' ? '$39' : '$49';
   const proPriceSubtext = proPricing === 'test' ? 'Limited launch price' : 'For growing teams';
 
   // === EXPERIMENT 3: Bottom CTA Text ===
-  // Control: "Start Free Trial" | Test: "Start in 60 Seconds"
-  const bottomCta = window.Bayanista?.experiment('bottom-cta-text') || 'control';
+  const bottomCta = useExperiment('bottom-cta-text');
   const bottomButtonText = bottomCta === 'test' ? 'Start in 60 Seconds' : 'Start Free Trial';
   const bottomSubtext = bottomCta === 'test'
     ? 'No credit card. No setup. Just paste one line of code.'
